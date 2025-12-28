@@ -1,0 +1,45 @@
+from dotenv import load_dotenv
+from pydantic import BaseModel
+from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import PydanticOutputParser
+from langchain.agents import create_agent, AgentExecutor
+
+load_dotenv()  # Load environment variables from .env file
+
+class ResearchResponse(BaseModel):
+    topic: str
+    summary: str
+    references: list[str]
+    tools_used: list[str]
+
+gpt = ChatOpenAI(model="gpt-5-mini", temperature=0)
+#claude = ChatAnthropic(model="claude-3-5-sonnet-20241022", temperature=0)
+
+# Parse the response into a ResearchResponse object to use
+parser = PydanticOutputParser(pydantic_object=ResearchResponse)
+
+prompt = ChatPromptTemplate.from_messages(
+    [
+    ("system", 
+     """You are a research assistant that provides detailed summaries on various topics.
+     Answer the user query and use necessary tools to gather information.
+     Wrap the response in this formar and provide no other text\n{format_instructions}
+     """),
+     ("placeholder", "{chat_history}"),
+     ("human", "{user_input}"),
+     ("assistant", "{agent_scratchpad}")
+    ]
+).partial(format_instructions=parser.get_format_instructions())
+
+agent = create_agent(
+    model=gpt,
+    prompt=prompt,
+    tools=[]
+)
+
+agent_executor = AgentExecutor(agent=agent, tools=[],verbose=True)
+raw_response = agent_executor.invoke({})
+
+#response = gpt.invoke("What is the capital of France?")
