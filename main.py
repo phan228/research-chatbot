@@ -30,3 +30,14 @@ system_prompt = (
     "Answer the user query and use necessary tools to gather information. "
     f"Wrap the response in this format and provide no other text:\n{parser.get_format_instructions()}"
 )
+
+def main():
+    parser_cli = argparse.ArgumentParser(description="Research assistant")
+    parser_cli.add_argument("--tools-only", action="store_true", help="Run tools directly without LLM")
+    parser_cli.add_argument("--save", type=str, default=None, help="Optional file to save the summary")
+    args_cli = parser_cli.parse_args()
+
+    user_query = input("What can I help you research today? ")
+
+if __name__ == "__main__":
+    main()
