@@ -39,5 +39,24 @@ def main():
 
     user_query = input("What can I help you research today? ")
 
+    if args_cli.tools_only:
+        # Direct tool execution path (no LLM call)
+        try:
+            search_result = search_tool.invoke(user_query)
+            wiki_result = wiki_tool.invoke(user_query)
+            # Extract URLs from search result for references
+            refs = list(dict.fromkeys(re.findall(r"https?://\S+", str(search_result))))
+            tools_used = [search_tool.name, getattr(wiki_tool, "name", "Wikipedia")]
+            summary = (str(wiki_result) or "")
+            if search_result:
+                snippet = str(search_result)
+                summary = (summary + "\n\nSearch highlights:\n" + snippet)[:1500]
+            resp = ResearchResponse(
+                topic=user_query,
+                summary=summary,
+                references=refs,
+                tools_used=tools_used,
+            )
+            print(resp)
 if __name__ == "__main__":
     main()
