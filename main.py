@@ -58,5 +58,10 @@ def main():
                 tools_used=tools_used,
             )
             print(resp)
+            if args_cli.save:
+                save_msg = save_tool.invoke({"filename": args_cli.save, "content": resp.summary})
+                print(save_msg)
+        except Exception as e:
+            print(f"Error (tools-only): {e}")
 if __name__ == "__main__":
     main()
