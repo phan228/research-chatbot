@@ -63,5 +63,24 @@ def main():
                 print(save_msg)
         except Exception as e:
             print(f"Error (tools-only): {e}")
+    else:
+        # LLM tool-calling path using create_agent
+        try:
+            agent = create_agent(
+                model=gpt, 
+                tools=[search_tool, wiki_tool, save_tool], 
+                system_prompt=system_prompt
+            )
+            
+            # Stream the agent response
+            final_message = None
+            for event in agent.stream(
+                {"messages": [{"role": "user", "content": user_query}]},
+                stream_mode="values",
+            ):
+                final_message = event["messages"][-1]
+        except Exception as e:
+            print(f"Error: {e}")
+
 if __name__ == "__main__":
     main()
