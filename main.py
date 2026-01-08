@@ -80,6 +80,19 @@ def main():
                 stream_mode="values",
             ):
                 final_message = event["messages"][-1]
+            
+            # Extract and parse the final response
+            if final_message and hasattr(final_message, "content"):
+                final_text = final_message.content
+                if isinstance(final_text, list):
+                    final_text = "".join(str(item) for item in final_text)
+                structured_response = parser.parse(final_text)
+                print(structured_response)
+                if args_cli.save:
+                    save_msg = save_tool.invoke({"filename": args_cli.save, "content": structured_response.summary})
+                    print(save_msg)
+            else:
+                print("Error: No response received from agent.")
         except Exception as e:
             print(f"Error: {e}")
 
